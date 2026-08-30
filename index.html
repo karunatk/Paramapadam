@@ -188,11 +188,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- CAMERA RECENTER BUTTON -->
-            <button id="btn-recenter" class="absolute bottom-3 right-3 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full wood-panel text-amber-300 flex items-center justify-center shadow-lg border border-amber-500/50 hover:bg-amber-900/50 active:scale-95 transition-all" title="Center Token">
-                <i class="fa-solid fa-location-crosshairs text-[10px] sm:text-xs"></i>
-            </button>
         </div>
 
         <!-- LEVEL ASCENSION MODAL -->
@@ -614,8 +609,8 @@
             cpuX = pCoords.x + 8;
             cpuY = pCoords.y;
 
-            // Frame camera near the bottom showing Square 1 and rows above
-            targetCameraY = playerY - canvas.height * 0.72;
+            // Frame camera with Row 0 resting directly at the bottom edge of the board
+            targetCameraY = Math.min(playerY - canvas.height * 0.55, -canvas.height);
             cameraY = targetCameraY;
 
             updateHUD();
@@ -1094,8 +1089,11 @@
 
                 // Smoothly focus camera on active player token climbing upward
                 const activeY = currentTurn === 'player' ? playerY : cpuY;
-                targetCameraY = activeY - canvas.height * 0.72;
+                targetCameraY = Math.min(activeY - canvas.height * 0.55, -canvas.height);
                 cameraY += (targetCameraY - cameraY) * 0.1;
+                if (cameraY > -canvas.height) {
+                    cameraY = -canvas.height;
+                }
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1142,11 +1140,6 @@
                 document.getElementById('codex-modal').classList.add('hidden');
             });
 
-            document.getElementById('btn-recenter').addEventListener('click', () => {
-                const activeY = currentTurn === 'player' ? playerY : cpuY;
-                cameraY = activeY - canvas.height * 0.72;
-            });
-
             document.getElementById('btn-sound-toggle').addEventListener('click', () => {
                 sounds.muted = !sounds.muted;
                 const icon = document.getElementById('sound-icon');
@@ -1163,6 +1156,7 @@
                 const dy = e.clientY - dragStartY;
                 dragStartY = e.clientY;
                 cameraY += dy;
+                if (cameraY > -canvas.height) cameraY = -canvas.height;
             });
             vp.addEventListener('pointerup', () => isDragging = false);
             vp.addEventListener('pointerleave', () => isDragging = false);
